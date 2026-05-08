@@ -10,3 +10,5 @@ dist-renderer/
 .DS_Store
 .vscode/
 .idea/
+tsconfig.tsbuildinfo
+*.tsbuildinfo
