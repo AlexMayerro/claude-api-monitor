@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root,
+.dark {
+  --bg-primary: #0F0F14;
+  --bg-secondary: #1A1A24;
+  --bg-tertiary: #24243A;
+  --border: #2A2A3E;
+  --text-primary: #E8E8F0;
+  --text-secondary: #8888A8;
+}
+
+.light {
+  --bg-primary: #FAFAFA;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F0F0F5;
+  --border: #E2E2EA;
+  --text-primary: #1A1A2E;
+  --text-secondary: #6B6B80;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 13px;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Smooth theme transitions on key tokens */
+*,
+*::before,
+*::after {
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+button {
+  font-family: inherit;
+}
+
+.titlebar-drag {
+  -webkit-app-region: drag;
+}
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Custom scrollbar */
+.scrollarea {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.scrollarea::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollarea::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.scrollarea::-webkit-scrollbar-thumb:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* Window rounded corners (Win11-style) */
+.window-shell {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background-color: var(--bg-primary);
+}
+
+/* Section divider with gradient fade */
+.divider-fade {
+  height: 1px;
+  background-image: linear-gradient(
+    to right,
+    transparent,
+    var(--border) 20%,
+    var(--border) 80%,
+    transparent
+  );
+}
+
+/* Pulsing rate-limited badge */
+@keyframes rateLimitPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.rate-limited-pulse {
+  animation: rateLimitPulse 1.4s ease-in-out infinite;
+}
+
+/* Collapsible section transitions */
+.collapsible-content {
+  overflow: hidden;
+  transition: max-height 220ms ease, opacity 200ms ease;
+}
+
+input[type="text"],
+input[type="password"] {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #6C8CFF;
+  outline-offset: 1px;
+}

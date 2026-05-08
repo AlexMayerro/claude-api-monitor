@@ -1,0 +1,85 @@
+{
+  "name": "claude-monitor",
+  "version": "1.0.0",
+  "description": "A modern, always-on-top desktop widget for monitoring Anthropic Claude API usage, costs, and rate limits.",
+  "main": "dist-electron/main/main.js",
+  "author": "Alex Mayer",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b tsconfig.json && vite build && tsc -p tsconfig.electron.json",
+    "electron:dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && tsc -p tsconfig.electron.json && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron dist-electron/main/main.js\"",
+    "electron:build": "npm run build && electron-builder --win",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "electron-store": "^8.2.0",
+    "lucide-react": "^0.460.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.13.3",
+    "zustand": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "extends": null,
+    "appId": "com.claudemonitor.app",
+    "productName": "Claude Monitor",
+    "directories": {
+      "output": "dist",
+      "buildResources": "resources"
+    },
+    "files": [
+      "dist-electron/**/*",
+      "dist-renderer/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/icon.png",
+        "to": "icon.png"
+      },
+      {
+        "from": "resources/icon.ico",
+        "to": "icon.ico"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "resources/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "deleteAppDataOnUninstall": true,
+      "shortcutName": "Claude Monitor",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

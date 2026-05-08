@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dist-electron/
+dist-renderer/
+.env
+.env.local
+*.exe
+*.log
+.vite/
+.DS_Store
+.vscode/
+.idea/
