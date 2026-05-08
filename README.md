@@ -34,7 +34,21 @@ Claude API usage, costs, and rate limits in real time.
 
 ## Getting Started
 
-### Prerequisites
+### Option 1 — Install from the prebuilt Windows installer (easiest)
+
+Download **[Claude API Monitor.exe](./Claude%20API%20Monitor.exe)** (74 MB) from
+this repo and double-click it. The NSIS one-click installer will:
+
+- Install per-user (no admin prompt required)
+- Create a desktop shortcut and Start Menu entry
+- Launch into the guided "Connect Anthropic Account" wizard on first run
+
+The installer is unsigned, so on first launch Windows SmartScreen will show
+"Windows protected your PC". Click **More info → Run anyway** to proceed.
+
+### Option 2 — Build from source
+
+#### Prerequisites
 
 - Node.js 18 or newer
 - An Anthropic API key (`sk-ant-api...`)
@@ -42,13 +56,13 @@ Claude API usage, costs, and rate limits in real time.
   details, usage history, and cost reports. Admin keys are only available for
   organization accounts.
 
-### Install
+#### Install
 
 ```bash
 npm install
 ```
 
-### Develop
+#### Develop
 
 ```bash
 npm run electron:dev
@@ -57,7 +71,7 @@ npm run electron:dev
 This launches Vite at `http://localhost:5173` and opens the Electron window
 with hot reload for the renderer.
 
-### Build the installer
+#### Build the installer
 
 ```bash
 npm run electron:build
