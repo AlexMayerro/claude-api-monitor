@@ -13,6 +13,7 @@ const FEATURES = [
 export function UpgradeModal() {
   const open = useAppStore((s) => s.upgradeOpen);
   const setOpen = useAppStore((s) => s.setUpgradeOpen);
+  const upgradeToPro = useAppStore((s) => s.upgradeToPro);
 
   return (
     <AnimatePresence>
@@ -72,6 +73,7 @@ export function UpgradeModal() {
                 </div>
                 <motion.button
                   whileTap={{ scale: 0.97 }}
+                  onClick={upgradeToPro}
                   className="mt-3 w-full rounded-xl bg-gradient-to-r from-accent to-gradient-end py-3 text-[14px] font-semibold text-white shadow-glow"
                 >
                   Start Free Trial

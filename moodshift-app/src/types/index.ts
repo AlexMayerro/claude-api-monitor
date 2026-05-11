@@ -33,3 +33,27 @@ export interface RegradedPhoto {
   /** ISO timestamp. */
   createdAt: string;
 }
+
+export type AuthMethod = 'apple' | 'google' | 'facebook' | 'email';
+
+export type AuthKind = 'none' | 'guest' | 'signed-in';
+
+export interface AuthState {
+  kind: AuthKind;
+  method?: AuthMethod;
+  email?: string;
+  name?: string;
+}
+
+export type Plan = 'free' | 'pro';
+
+export type ApiProvider = 'xai-grok' | 'openai' | 'anthropic' | 'replicate';
+
+export interface ByokConfig {
+  enabled: boolean;
+  provider: ApiProvider;
+  /** Stored locally only; never sent anywhere from this prototype. */
+  apiKey: string;
+  /** Optional user keywords appended to the (hidden) base prompt. */
+  keywords: string;
+}

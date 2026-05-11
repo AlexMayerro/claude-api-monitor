@@ -7,11 +7,14 @@ import { DiscoverScreen } from './screens/DiscoverScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
 import { MyPhotosScreen } from './screens/MyPhotosScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
+import { AuthScreen } from './screens/AuthScreen';
 import { useAppStore } from './stores/useAppStore';
 import { PhotoUploadSheet } from './components/PhotoUploadSheet';
 import { ProcessingOverlay } from './components/ProcessingOverlay';
 import { ResultScreen } from './components/ResultScreen';
 import { UpgradeModal } from './components/UpgradeModal';
+import { GuestGate } from './components/GuestGate';
+import { GuestBanner } from './components/GuestBanner';
 import { STYLES } from './data/styles';
 
 type FlowStage = 'idle' | 'upload' | 'processing' | 'result';
@@ -24,6 +27,7 @@ export default function App() {
   const pendingSrc = useAppStore((s) => s.pendingSrc);
   const setPendingSrc = useAppStore((s) => s.setPendingSrc);
   const consumeDaily = useAppStore((s) => s.consumeDaily);
+  const authKind = useAppStore((s) => s.auth.kind);
 
   const [flow, setFlow] = useState<FlowStage>('idle');
 
@@ -33,6 +37,19 @@ export default function App() {
   useEffect(() => {
     if (!pendingStyleId) {
       setFlow('idle');
+      return;
+    }
+    // Pre-flight: if the user can't consume another regrade, bounce to the
+    // appropriate paywall before they even pick a photo.
+    const state = useAppStore.getState();
+    const blocked =
+      state.plan !== 'pro' &&
+      ((state.auth.kind === 'guest' && state.guestUsed >= state.guestLimit) ||
+        (state.auth.kind === 'signed-in' && state.usedToday >= state.dailyLimit));
+    if (blocked) {
+      if (state.auth.kind === 'guest') state.setGuestGateOpen(true);
+      else state.setUpgradeOpen(true);
+      setPendingStyleId(null);
       return;
     }
     if (pendingSrc) {
@@ -60,30 +77,42 @@ export default function App() {
     setPendingSrc(src);
   };
 
+  const needsAuth = splashDone && authKind === 'none';
+  const inApp = splashDone && authKind !== 'none';
+
   return (
     <PhoneFrame>
       <AnimatePresence>{!splashDone && <SplashScreen />}</AnimatePresence>
 
-      {/* Screens */}
-      <div className="absolute inset-0">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="absolute inset-0"
-          >
-            {activeTab === 'discover' && <DiscoverScreen />}
-            {activeTab === 'library' && <LibraryScreen />}
-            {activeTab === 'photos' && <MyPhotosScreen />}
-            {activeTab === 'profile' && <ProfileScreen />}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+      <AnimatePresence>
+        {needsAuth && <AuthScreen key="auth" />}
+      </AnimatePresence>
 
-      <BottomNav />
+      {/* Screens */}
+      {inApp && (
+        <>
+          <div className="absolute inset-0">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                className="absolute inset-0"
+              >
+                {activeTab === 'discover' && <DiscoverScreen />}
+                {activeTab === 'library' && <LibraryScreen />}
+                {activeTab === 'photos' && <MyPhotosScreen />}
+                {activeTab === 'profile' && <ProfileScreen />}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          <GuestBanner />
+          <BottomNav />
+        </>
+      )}
 
       {/* Regrade flow */}
       <PhotoUploadSheet
@@ -123,6 +152,7 @@ export default function App() {
       </AnimatePresence>
 
       <UpgradeModal />
+      <GuestGate />
     </PhoneFrame>
   );
 }
