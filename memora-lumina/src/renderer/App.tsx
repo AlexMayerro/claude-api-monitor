@@ -44,22 +44,44 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     if (phase !== 'app') return;
-    loadConversations();
-    loadMemories();
-    loadStats();
-    // Open initial tabs
+    loadConversations().catch((err) => console.error('[App] loadConversations failed:', err));
+    loadMemories().catch((err) => console.error('[App] loadMemories failed:', err));
+    loadStats().catch((err) => console.error('[App] loadStats failed:', err));
     (async () => {
-      if (tabs.length > 0) return;
-      const convs = await window.memora.getConversations();
-      if (convs.length === 0) {
-        const conv = await createConversation();
-        openTab({ kind: 'chat', title: conv.title || 'New chat', conversationId: conv.id });
-      } else {
-        const first = convs[0];
-        openTab({ kind: 'chat', title: first.title, conversationId: first.id });
-      }
-      if (openMemoryOnStart) {
-        openTab({ kind: 'memory-stream', title: 'Memory Stream' });
+      try {
+        if (tabs.length > 0) return;
+        let opened = false;
+        try {
+          const convs = await window.memora.getConversations();
+          if (convs.length === 0) {
+            const conv = await createConversation();
+            openTab({ kind: 'chat', title: conv.title || 'New chat', conversationId: conv.id });
+          } else {
+            const first = convs[0];
+            openTab({ kind: 'chat', title: first.title, conversationId: first.id });
+          }
+          opened = true;
+        } catch (err) {
+          console.error('[App] Failed to bootstrap initial chat tab from IPC:', err);
+        }
+        if (!opened) {
+          // Fallback: open a local-only tab so the user is never stuck on a blank screen.
+          openTab({ kind: 'chat', title: 'New chat', conversationId: `local-${Date.now()}` });
+        }
+        if (openMemoryOnStart) {
+          try {
+            openTab({ kind: 'memory-stream', title: 'Memory Stream' });
+          } catch (err) {
+            console.error('[App] Failed to open Memory Stream tab:', err);
+          }
+        }
+      } catch (err) {
+        console.error('[App] Initial tab bootstrap crashed:', err);
+        try {
+          openTab({ kind: 'chat', title: 'New chat', conversationId: `local-${Date.now()}` });
+        } catch {
+          // ignore — AppShell renders a recovery button when no tabs exist
+        }
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps

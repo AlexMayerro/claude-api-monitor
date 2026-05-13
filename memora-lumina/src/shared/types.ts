@@ -175,7 +175,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   sidebar_width: 280,
   animation_speed: 'full',
   window_opacity: 100,
-  default_model: 'claude-sonnet-4-6',
+  default_model: 'claude-sonnet-4-20250514',
   temperature: 0.7,
   max_response_length: 'medium',
   streaming: true,
@@ -241,8 +241,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
 };
 
 export const AVAILABLE_MODELS = [
-  { id: 'claude-opus-4-7', name: 'Claude Opus 4.7', description: 'Most capable, deepest reasoning' },
-  { id: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6', description: 'Balanced — fast and intelligent' },
+  { id: 'claude-opus-4-20250514', name: 'Claude Opus 4', description: 'Most capable, deepest reasoning' },
+  { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4', description: 'Balanced — fast and intelligent' },
   { id: 'claude-haiku-4-5-20251001', name: 'Claude Haiku 4.5', description: 'Fastest, most efficient' },
 ];
 

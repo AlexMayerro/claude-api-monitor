@@ -14,17 +14,31 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
   const [step, setStep] = useState(1);
   const [apiKey, setApiKey] = useState('');
   const [building, setBuilding] = useState(false);
+  const [completionError, setCompletionError] = useState<string | null>(null);
   const updateSetting = useSettingsStore((s) => s.update);
 
   const handleProfileComplete = async (profile: { name: string; primary_use: string; initial_context: string }) => {
+    setCompletionError(null);
     setBuilding(true);
-    await updateSetting('api_key', apiKey);
-    await updateSetting('ai_provider', 'anthropic');
-    await window.memora.updateProfile(profile);
-    await updateSetting('onboarding_completed', true);
-    setTimeout(() => {
-      onComplete();
-    }, 2400);
+    try {
+      await updateSetting('api_key', apiKey);
+      await updateSetting('ai_provider', 'anthropic');
+      await window.memora.updateProfile(profile);
+      await updateSetting('onboarding_completed', true);
+      setTimeout(() => {
+        onComplete();
+      }, 2400);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to save your profile.';
+      console.error('[Onboarding] handleProfileComplete failed:', err);
+      setCompletionError(message);
+      setBuilding(false);
+    }
+  };
+
+  const handleSkip = () => {
+    setCompletionError(null);
+    onComplete();
   };
 
   if (building) {
@@ -35,6 +49,30 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
         </div>
         <div className="mt-6 text-xl font-semibold tracking-tight">Building your Memory Palace…</div>
         <div className="mt-2 text-text-secondary text-sm">Indexing, calibrating, and waking the brain.</div>
+      </div>
+    );
+  }
+
+  if (completionError) {
+    return (
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-bg-primary text-text-primary px-8">
+        <div className="w-14 h-14 rounded-2xl bg-[var(--error-bg)] border border-error/40 text-error flex items-center justify-center mb-4">!</div>
+        <div className="text-xl font-semibold tracking-tight">Couldn't finish setting up.</div>
+        <div className="mt-2 text-text-secondary text-sm text-center max-w-md">{completionError}</div>
+        <div className="mt-6 flex gap-3">
+          <button
+            className="h-9 px-4 rounded-md bg-surface-elevated text-text-primary border border-border hover:bg-surface-active"
+            onClick={() => setCompletionError(null)}
+          >
+            Try again
+          </button>
+          <button
+            className="h-9 px-4 rounded-md bg-accent text-white hover:bg-accent-hover"
+            onClick={handleSkip}
+          >
+            Continue anyway
+          </button>
+        </div>
       </div>
     );
   }

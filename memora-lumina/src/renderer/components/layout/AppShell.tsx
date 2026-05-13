@@ -4,34 +4,80 @@ import { Sidebar } from './Sidebar';
 import { SplitPane } from './SplitPane';
 import { useAppStore } from '@renderer/stores/useAppStore';
 import { useSettingsStore } from '@renderer/stores/useSettingsStore';
+import { useChatStore } from '@renderer/stores/useChatStore';
 import { ChatView } from '@renderer/components/chat/ChatView';
 import { MemoryStream } from '@renderer/components/memory-stream/MemoryStream';
 import { SettingsView } from '@renderer/components/settings/SettingsView';
 import { useMemoryStore } from '@renderer/stores/useMemoryStore';
-import { Brain } from 'lucide-react';
+import { Brain, Plus } from 'lucide-react';
 
 function renderTab(tab: ReturnType<typeof useAppStore.getState>['tabs'][number] | undefined): React.ReactElement {
   if (!tab) {
-    return <EmptyState />;
+    return <RecoveryEmptyState />;
   }
   switch (tab.kind) {
     case 'chat':
-      return tab.conversationId ? <ChatView conversationId={tab.conversationId} /> : <EmptyState />;
+      return tab.conversationId ? <ChatView conversationId={tab.conversationId} /> : <RecoveryEmptyState />;
     case 'memory-stream':
       return <MemoryStream />;
     case 'settings':
       return <SettingsView />;
     default:
-      return <EmptyState />;
+      return <RecoveryEmptyState />;
   }
 }
 
-const EmptyState: React.FC = () => (
-  <div className="h-full w-full flex flex-col items-center justify-center text-text-muted gap-3">
-    <Brain size={36} className="text-text-muted/50" />
-    <div className="text-text-secondary text-sm">Open a chat or the Memory Stream to begin.</div>
-  </div>
-);
+const RecoveryEmptyState: React.FC = () => {
+  const openTab = useAppStore((s) => s.openTab);
+  const createConversation = useChatStore((s) => s.createConversation);
+  const [working, setWorking] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const handleStart = async () => {
+    setError(null);
+    setWorking(true);
+    try {
+      const conv = await createConversation();
+      openTab({ kind: 'chat', title: conv.title || 'New chat', conversationId: conv.id });
+    } catch (err) {
+      console.error('[AppShell] createConversation failed, falling back to local tab:', err);
+      openTab({ kind: 'chat', title: 'New chat', conversationId: `local-${Date.now()}` });
+      setError(err instanceof Error ? err.message : 'Could not reach the database.');
+    } finally {
+      setWorking(false);
+    }
+  };
+
+  return (
+    <div className="h-full w-full flex flex-col items-center justify-center text-text-muted gap-4 px-6">
+      <Brain size={36} className="text-text-muted/50" />
+      <div className="text-center">
+        <div className="text-text-primary text-base font-medium">Nothing open yet.</div>
+        <div className="text-text-secondary text-[13px] mt-1">Start a new chat or open the Memory Stream.</div>
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={handleStart}
+          disabled={working}
+          className="inline-flex items-center gap-2 h-9 px-4 rounded-md bg-accent text-white hover:bg-accent-hover disabled:opacity-60"
+        >
+          <Plus size={14} /> {working ? 'Starting…' : 'Start a new chat'}
+        </button>
+        <button
+          onClick={() => openTab({ kind: 'memory-stream', title: 'Memory Stream' })}
+          className="inline-flex items-center gap-2 h-9 px-4 rounded-md border border-border bg-surface-card text-text-primary hover:bg-surface-elevated"
+        >
+          <Brain size={14} /> Open Memory Stream
+        </button>
+      </div>
+      {error ? (
+        <div className="max-w-md text-center text-[12px] text-error bg-[var(--error-bg)] border border-error/30 rounded-md px-3 py-2">
+          {error}
+        </div>
+      ) : null}
+    </div>
+  );
+};
 
 export const AppShell: React.FC = () => {
   const tabs = useAppStore((s) => s.tabs);
