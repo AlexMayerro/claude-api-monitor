@@ -28,15 +28,61 @@ Memora Lumina is a premium desktop app that puts an intelligent, persistent memo
 
 ---
 
-## Getting started
+## Install on Windows
+
+You have three ways to install on Windows. All produce the same app.
+
+### Option 1 — Portable (fastest, no install)
+
+1. Download **`Memora Lumina.exe`** from the root of this repository (or from a GitHub Release).
+2. Double-click it. Windows SmartScreen may warn that it's from an unknown publisher — click **More info → Run anyway** (the build is unsigned). Your antivirus may need to scan it briefly first.
+3. The app launches the splash screen, then onboarding. Done.
+
+Portable mode means there is no installer and no Start menu shortcut — the single `.exe` extracts itself to a temp folder on each launch. Your conversations + memories live in `%APPDATA%\Memora Lumina\memora-lumina.db`, so they persist across launches.
+
+### Option 2 — NSIS installer (creates Start menu + desktop shortcut)
+
+The repo includes a GitHub Actions workflow that builds the proper NSIS installer on a Windows runner:
+
+```
+.github/workflows/memora-lumina-release.yml
+```
+
+To produce a release `.exe`:
 
 ```bash
-# 1. Install dependencies
-npm install
+# create and push a tag like memora-lumina-v1.0.0
+git tag memora-lumina-v1.0.0
+git push origin memora-lumina-v1.0.0
+```
 
-# 2. Run in development (Vite + Electron with HMR)
+The workflow runs on `windows-latest`, builds `Memora-Lumina-1.0.0-x64.exe` (NSIS installer), the portable, and the zip, then attaches all three to a new GitHub Release. You can also trigger it manually from the GitHub Actions tab via **Run workflow**.
+
+### Option 3 — Build from source
+
+```bash
+cd memora-lumina
+npm install
+npm run electron:build      # NSIS installer + portable + zip into release/
+```
+
+> Building from Linux/macOS works for portable + zip targets, but the NSIS installer also needs Wine. The simplest path is the GitHub Actions workflow.
+
+---
+
+## Run in development
+
+```bash
+cd memora-lumina
+npm install
 npm run electron:dev
 ```
+
+This runs Vite + Electron with hot module reload.
+
+---
+
+## First run
 
 On first launch the app walks you through a 3-step onboarding:
 
@@ -47,16 +93,6 @@ On first launch the app walks you through a 3-step onboarding:
 You'll then land in the chat. As you talk, memories are extracted in the background and appear in the Memory Stream tab.
 
 > Grab an Anthropic API key at [console.anthropic.com](https://console.anthropic.com/).
-
----
-
-## Building the Windows installer
-
-```bash
-npm run electron:build
-```
-
-The signed (or unsigned) NSIS installer is written to `release/Memora-Lumina-Setup-<version>.exe`. It installs per-user, creates desktop + start-menu shortcuts, and leaves your memories database in place on uninstall (unless the user opts out).
 
 ---
 
