@@ -2,12 +2,20 @@ import { create } from 'zustand';
 import { shortId } from '@renderer/lib/utils';
 
 export type TabKind = 'chat' | 'memory-stream' | 'settings';
+export type ToastKind = 'success' | 'error' | 'info' | 'warning';
 
 export interface Tab {
   id: string;
   kind: TabKind;
   title: string;
   conversationId?: string;
+}
+
+export interface Toast {
+  id: string;
+  kind: ToastKind;
+  message: string;
+  expiresAt: number;
 }
 
 interface AppState {
@@ -32,8 +40,12 @@ interface AppState {
   setSplitRatio: (r: number) => void;
   reorderTabs: (from: number, to: number) => void;
 
+  toasts: Toast[];
+  showToast: (msg: string, options?: { kind?: ToastKind; durationMs?: number }) => void;
+  dismissToast: (id: string) => void;
+
+  // Legacy fields kept so older readers don't break
   toastMessage: string | null;
-  showToast: (msg: string, durationMs?: number) => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -104,11 +116,25 @@ export const useAppStore = create<AppState>((set, get) => ({
       return { tabs };
     }),
 
+  toasts: [],
   toastMessage: null,
-  showToast: (msg, durationMs = 3000) => {
-    set({ toastMessage: msg });
+  showToast: (msg, options) => {
+    const kind = options?.kind ?? 'info';
+    const durationMs = options?.durationMs ?? 3000;
+    const id = shortId();
+    const expiresAt = Date.now() + durationMs;
+    set((state) => ({
+      toasts: [...state.toasts, { id, kind, message: msg, expiresAt }],
+      toastMessage: msg,
+    }));
     setTimeout(() => {
-      if (get().toastMessage === msg) set({ toastMessage: null });
+      set((state) => ({
+        toasts: state.toasts.filter((t) => t.id !== id),
+        toastMessage: state.toastMessage === msg ? null : state.toastMessage,
+      }));
     }, durationMs);
+  },
+  dismissToast: (id) => {
+    set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) }));
   },
 }));

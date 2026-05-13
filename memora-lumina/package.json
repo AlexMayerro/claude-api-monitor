@@ -1,6 +1,6 @@
 {
   "name": "memora-lumina",
-  "version": "2.0.0",
+  "version": "1.5.0",
   "description": "Memora Lumina — an intelligent, persistent memory layer for AI conversations.",
   "main": "dist-electron/main/main.js",
   "author": "Memora Lumina",

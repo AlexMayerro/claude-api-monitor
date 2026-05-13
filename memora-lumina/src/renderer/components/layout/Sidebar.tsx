@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Brain, Settings as SettingsIcon, Trash2, Pin, Pencil, ChevronsLeft } from 'lucide-react';
+import { Plus, Brain, Settings as SettingsIcon, Trash2, Pin, Pencil, ChevronsLeft, AlertTriangle } from 'lucide-react';
 import { useAppStore } from '@renderer/stores/useAppStore';
 import { useChatStore } from '@renderer/stores/useChatStore';
 import { useMemoryStore } from '@renderer/stores/useMemoryStore';
 import { useSettingsStore } from '@renderer/stores/useSettingsStore';
 import { groupByDate, cn } from '@renderer/lib/utils';
 import { Tooltip } from '@renderer/components/common/Tooltip';
+import { Modal } from '@renderer/components/common/Modal';
+import { Button } from '@renderer/components/common/Button';
 
 export const Sidebar: React.FC = () => {
   const sidebarOpen = useAppStore((s) => s.sidebarOpen);
@@ -31,6 +33,10 @@ export const Sidebar: React.FC = () => {
   const [profileName, setProfileName] = useState<string>('You');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
+  const showToast = useAppStore((s) => s.showToast);
+  const closeTab = useAppStore((s) => s.closeTab);
+  const tabsAll = useAppStore((s) => s.tabs);
 
   useEffect(() => {
     loadConversations();
@@ -51,6 +57,23 @@ export const Sidebar: React.FC = () => {
 
   const handleOpenConv = (id: string, title: string) => {
     openTab({ kind: 'chat', title, conversationId: id });
+  };
+
+  const requestDelete = (id: string, title: string) => setPendingDelete({ id, title });
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    const { id, title } = pendingDelete;
+    setPendingDelete(null);
+    try {
+      await deleteConversation(id);
+      // Close any open tabs for this conversation
+      tabsAll.filter((t) => t.kind === 'chat' && t.conversationId === id).forEach((t) => closeTab(t.id));
+      showToast(`Deleted "${title.slice(0, 40)}"`, { kind: 'success', durationMs: 2500 });
+    } catch (err) {
+      console.error('[Sidebar] deleteConversation failed:', err);
+      showToast(`Could not delete conversation: ${(err as Error).message}`, { kind: 'error', durationMs: 4000 });
+    }
   };
 
   if (!sidebarOpen) {
@@ -132,7 +155,7 @@ export const Sidebar: React.FC = () => {
                 }}
                 onChangeEdit={setEditingValue}
                 onTogglePin={() => togglePin(c.id)}
-                onDelete={() => deleteConversation(c.id)}
+                onDelete={() => requestDelete(c.id, c.title)}
               />
             ))}
           </Section>
@@ -194,6 +217,28 @@ export const Sidebar: React.FC = () => {
           </button>
         </Tooltip>
       </div>
+
+      <Modal
+        open={pendingDelete !== null}
+        onClose={() => setPendingDelete(null)}
+        title="Delete this conversation?"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setPendingDelete(null)}>Cancel</Button>
+            <Button variant="danger" onClick={confirmDelete}>
+              <Trash2 size={14} /> Delete
+            </Button>
+          </>
+        }
+      >
+        <div className="flex items-start gap-3 text-[13.5px] text-text-secondary">
+          <AlertTriangle size={20} className="text-warning flex-shrink-0 mt-0.5" />
+          <div>
+            <div className="text-text-primary">"{pendingDelete?.title}"</div>
+            <div className="mt-1">All messages in this conversation will be permanently deleted. Your saved memories are not affected.</div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

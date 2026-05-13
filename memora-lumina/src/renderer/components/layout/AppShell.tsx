@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { TitleBar } from './TitleBar';
 import { Sidebar } from './Sidebar';
 import { SplitPane } from './SplitPane';
@@ -9,7 +10,7 @@ import { ChatView } from '@renderer/components/chat/ChatView';
 import { MemoryStream } from '@renderer/components/memory-stream/MemoryStream';
 import { SettingsView } from '@renderer/components/settings/SettingsView';
 import { useMemoryStore } from '@renderer/stores/useMemoryStore';
-import { Brain, Plus } from 'lucide-react';
+import { Brain, Plus, CheckCircle2, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 function renderTab(tab: ReturnType<typeof useAppStore.getState>['tabs'][number] | undefined): React.ReactElement {
   if (!tab) {
@@ -118,13 +119,45 @@ export const AppShell: React.FC = () => {
 };
 
 const ToastLayer: React.FC = () => {
-  const toast = useAppStore((s) => s.toastMessage);
+  const toasts = useAppStore((s) => s.toasts);
+  const dismiss = useAppStore((s) => s.dismissToast);
   const position = useSettingsStore((s) => s.settings.toast_position);
-  if (!toast) return null;
-  const posClass = position === 'top-right' ? 'top-16 right-6' : 'bottom-6 right-6';
+  const posClass = position === 'top-right' ? 'top-16 right-6 flex-col' : 'bottom-6 right-6 flex-col-reverse';
+
+  const kindStyle: Record<string, { icon: React.ReactNode; bg: string; text: string }> = {
+    success: { icon: <CheckCircle2 size={16} />, bg: 'bg-[var(--success-bg)] border-success/40', text: 'text-success' },
+    error: { icon: <AlertCircle size={16} />, bg: 'bg-[var(--error-bg)] border-error/40', text: 'text-error' },
+    warning: { icon: <AlertTriangle size={16} />, bg: 'bg-[var(--warning-bg)] border-warning/40', text: 'text-warning' },
+    info: { icon: <Info size={16} />, bg: 'bg-surface-elevated border-border', text: 'text-text-primary' },
+  };
+
   return (
-    <div className={`fixed ${posClass} z-50 max-w-sm bg-surface-elevated border border-border rounded-md shadow-elevated px-4 py-3 text-[13px] text-text-primary animate-slide-up`}>
-      {toast}
+    <div className={`fixed ${posClass} z-50 flex gap-2 max-w-sm pointer-events-none`}>
+      <AnimatePresence initial={false}>
+        {toasts.map((t) => {
+          const style = kindStyle[t.kind] || kindStyle.info;
+          return (
+            <motion.div
+              key={t.id}
+              initial={{ opacity: 0, x: 16, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 16, scale: 0.95 }}
+              transition={{ duration: 0.18 }}
+              className={`pointer-events-auto inline-flex items-start gap-2 ${style.bg} border rounded-md shadow-elevated px-3 py-2.5 text-[13px] text-text-primary min-w-[260px]`}
+            >
+              <span className={`mt-0.5 flex-shrink-0 ${style.text}`}>{style.icon}</span>
+              <div className="flex-1 leading-snug">{t.message}</div>
+              <button
+                onClick={() => dismiss(t.id)}
+                className="text-text-muted hover:text-text-primary flex-shrink-0"
+                aria-label="Dismiss"
+              >
+                <X size={13} />
+              </button>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
     </div>
   );
 };

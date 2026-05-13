@@ -49,12 +49,12 @@ export const StreamEntry: React.FC<Props> = ({ memory, query }) => {
     const rightChat = tabs.find((t) => t.id === rightTabId && t.kind === 'chat');
     const chatTab = activeChat || rightChat;
     if (!chatTab?.conversationId) {
-      showToast('Open a chat first to inject this memory.', 3000);
+      showToast('Open a chat first to inject this memory.', { kind: 'warning', durationMs: 3000 });
       return;
     }
     addManual(chatTab.conversationId, memory.id);
     window.memora.injectMemoryToContext(chatTab.conversationId, memory.id);
-    showToast('Memory added to context', 2000);
+    showToast('Memory added to context', { kind: 'success', durationMs: 2000 });
   };
 
   return (

@@ -2,7 +2,7 @@
 
 > The AI that truly knows you.
 >
-> **Current build: v2.0.0** — bulletproofed startup, recovery panel when no tabs are open, hardened onboarding error handling, verified Claude model IDs (Opus 4 / Sonnet 4 / Haiku 4.5), and a `postinstall` step that automatically rebuilds `better-sqlite3` against the matching Electron version.
+> **Current build: v1.5.0 — first full production release.** Bulletproofed startup, global error boundary, typed toast system, delete-conversation confirmation, double-click maximize on the title bar, verified Claude model IDs (Opus 4 / Sonnet 4 / Haiku 4.5), and a `postinstall` step that rebuilds `better-sqlite3` against the matching Electron version.
 
 Memora Lumina is a premium desktop app that puts an intelligent, persistent memory layer in front of your AI conversations. Bring your own Anthropic API key, chat with Claude through the app, and Memora Lumina quietly builds a powerful 4-layer memory system in the background — surfacing the right context at the right time and giving you a fully searchable **Memory Stream** of everything it has learned about you.
 

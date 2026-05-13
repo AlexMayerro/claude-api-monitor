@@ -24,7 +24,7 @@ export function useIPCListeners(): void {
     });
     const offMemory = window.memora.onMemorySaved((memory) => {
       appendMemory(memory);
-      if (memorySavedToast) showToast(`New memory saved: ${memory.summary}`, 3000);
+      if (memorySavedToast) showToast(`New memory: ${memory.summary}`, { kind: 'success', durationMs: 3000 });
     });
     return () => {
       offChunk();

@@ -18,23 +18,38 @@ export const PrivacySettings: React.FC = () => {
   const [confirmingClear, setConfirmingClear] = useState(false);
 
   const exportNow = async () => {
-    const result = await window.memora.exportMemories(settings.memory_export_format);
-    if (result) showToast(`Memories exported to ${result.path}`, 4000);
+    try {
+      const result = await window.memora.exportMemories(settings.memory_export_format);
+      if (result) showToast(`Memories exported to ${result.path}`, { kind: 'success', durationMs: 4000 });
+    } catch (err) {
+      console.error('[Settings] exportMemories failed:', err);
+      showToast(`Export failed: ${(err as Error).message}`, { kind: 'error', durationMs: 5000 });
+    }
   };
 
   const importNow = async () => {
-    const result = await window.memora.importMemories();
-    if (result) {
-      showToast(`Imported ${result.imported} memories`, 4000);
-      await loadMemories();
+    try {
+      const result = await window.memora.importMemories();
+      if (result) {
+        showToast(`Imported ${result.imported} memories`, { kind: 'success', durationMs: 4000 });
+        await loadMemories();
+      }
+    } catch (err) {
+      console.error('[Settings] importMemories failed:', err);
+      showToast(`Import failed: ${(err as Error).message}`, { kind: 'error', durationMs: 5000 });
     }
   };
 
   const clearAll = async () => {
-    await window.memora.clearAllMemories();
-    await loadMemories();
-    setConfirmingClear(false);
-    showToast('All memories cleared.', 3000);
+    try {
+      await window.memora.clearAllMemories();
+      await loadMemories();
+      setConfirmingClear(false);
+      showToast('All memories cleared.', { kind: 'success', durationMs: 3000 });
+    } catch (err) {
+      console.error('[Settings] clearAllMemories failed:', err);
+      showToast(`Could not clear memories: ${(err as Error).message}`, { kind: 'error', durationMs: 5000 });
+    }
   };
 
   return (

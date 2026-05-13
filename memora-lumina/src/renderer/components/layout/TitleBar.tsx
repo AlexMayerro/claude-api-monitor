@@ -13,8 +13,18 @@ export const TitleBar: React.FC = () => {
   }, []);
 
   return (
-    <div className="h-[44px] flex items-stretch bg-bg-secondary border-b border-border-subtle drag-region select-none">
-      <div className="flex items-center gap-2 px-3 flex-shrink-0">
+    <div
+      className="h-[44px] flex items-stretch bg-bg-secondary border-b border-border-subtle drag-region select-none"
+      onDoubleClick={(e) => {
+        // Only maximize when the double-click happened on the drag region itself,
+        // not on a child button (.no-drag descendants stop propagation themselves).
+        if (e.target === e.currentTarget) window.memora.maximize();
+      }}
+    >
+      <div
+        className="flex items-center gap-2 px-3 flex-shrink-0"
+        onDoubleClick={() => window.memora.maximize()}
+      >
         <div className="w-6 h-6 rounded-md bg-gradient-to-br from-accent to-accent-hover flex items-center justify-center text-white text-[12px] font-bold">
           M
         </div>
